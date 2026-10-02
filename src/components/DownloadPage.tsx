@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowDownToLine, ArrowRight, Check, Laptop, Menu, ShieldCheck, Smartphone, Sparkles } from 'lucide-react';
 
 const downloads = {
-  windows: '/release/Rebo26%201.0.0.exe',
+  windows: '/release/Rebo26%20Setup%201.0.0.exe',
   android: '/release/Rebo26-Android.apk',
 };
 
@@ -37,6 +37,7 @@ export default function DownloadPage() {
           <a href="#features">Features</a>
           <a href="#how-it-works">How it works</a>
           <a href="#install-help">Install guide</a>
+          <a href="/app">Open web app</a>
         </nav>
         <button className="nav-install" onClick={install}>
           Get the app <ArrowRight size={16} />
@@ -55,6 +56,7 @@ export default function DownloadPage() {
                 Download Rebo
                 <span className="button-platform">for {platformLabel}</span>
               </button>
+              <a className="install-secondary" href="/app">Open in browser <ArrowRight size={16} /></a>
             </div>
             <div className="hero-assurance"><ShieldCheck size={16} /> Available for Windows and Android · Always up to date</div>
           </div>
