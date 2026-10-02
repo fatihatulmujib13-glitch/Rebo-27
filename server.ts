@@ -47,7 +47,7 @@ let aiClient: GoogleGenAI | null = null;
 
 function getGoogleGenAI(): GoogleGenAI {
   if (!aiClient) {
-    const key = process.env.GEMINI_API_KEY;
+    const key = process.env.GEMINI_API_KEY?.trim();
     if (!key) {
       throw new Error('GEMINI_API_KEY environment variable is required but was not found.');
     }
@@ -63,6 +63,16 @@ function getGoogleGenAI(): GoogleGenAI {
   return aiClient;
 }
 
+function isGeminiAuthError(error: any): boolean {
+  const status = Number(error?.status ?? error?.statusCode);
+  const message = String(error?.message || error);
+  return status === 401 || status === 403 || /UNAUTHENTICATED|ACCESS_TOKEN_TYPE_UNSUPPORTED/.test(message);
+}
+
+function getGeminiAuthError(): Error {
+  return new Error('Gemini authentication failed. Set GEMINI_API_KEY to a valid Google AI Studio API key; OAuth access tokens are not accepted.');
+}
+
 // Helper: Robust generation with retry and automatic fallback from gemini-3.5-flash to gemini-3.1-flash-lite
 async function generateContentWithRetry(params: any, maxRetries = 3, delayMs = 1000): Promise<any> {
   let attempt = 0;
@@ -74,6 +84,9 @@ async function generateContentWithRetry(params: any, maxRetries = 3, delayMs = 1
       const ai = getGoogleGenAI();
       return await ai.models.generateContent(runParams);
     } catch (error: any) {
+      if (isGeminiAuthError(error)) {
+        throw getGeminiAuthError();
+      }
       attempt++;
       console.warn(`[Attempt ${attempt}/${maxRetries}] Gemini generateContent failed for model ${currentModel}:`, error.message || error);
       
@@ -107,6 +120,9 @@ async function generateContentStreamWithRetry(params: any, maxRetries = 3, delay
       const ai = getGoogleGenAI();
       return await ai.models.generateContentStream(runParams);
     } catch (error: any) {
+      if (isGeminiAuthError(error)) {
+        throw getGeminiAuthError();
+      }
       attempt++;
       console.warn(`[Attempt ${attempt}/${maxRetries}] Gemini generateContentStream failed for model ${currentModel}:`, error.message || error);
       
